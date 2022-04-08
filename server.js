@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
+import dotenv from "dotenv";
 
 import postRoutes from "./modules/posts/postRoutes.js";
 import userRoutes from "./modules/users/userRoutes.js";
@@ -16,6 +17,7 @@ app.use(
 app.use("/posts", postRoutes);
 app.use("/users", userRoutes);
 
+dotenv.config();
 app.use((error, req, res, next) => {
   if (res.headerSent) {
     return next(error);
@@ -24,9 +26,19 @@ app.use((error, req, res, next) => {
   res.json({ message: error.message || "An unknown error occurred!" });
 });
 
+const URI = process.env.MONGO_URL;
 mongoose
-  .connect(
-    "mongodb+srv://adi:parkware123@cluster0.7qsay.mongodb.net/parkwareDB?retryWrites=true&w=majority"
-  )
-  .then(() => app.listen(5000, () => console.log("Server running")))
-  .catch(err => console.log(err));
+  .connect(URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(console.log("Connected to MongoDB"))
+  .catch((err) => console.log(err));
+
+app.get("/", (req, res) => {
+  res.send("Test");
+});
+
+app.listen("5000", () => {
+  console.log("listening on port 5000");
+});

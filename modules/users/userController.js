@@ -1,27 +1,15 @@
 import User from "./userModel.js";
+import bcrypt from "bcrypt";
 
-export const signin = async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User doesn't exist." });
-    }
-
-    if (password != user.password) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    res.status(200).json({ user });
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
-  }
-};
-
-export const signup = async (req, res) => {
-  const { firstName, lastName, email, password, confirmPassword, admin } =
-    req.body;
+export const signUp = async (req, res) => {
+  const {
+    firstName,
+    lastName,
+    email,
+    password,
+    confirmPassword,
+    registrationPlates,
+  } = req.body;
 
   try {
     const existingUser = await User.findOne({ email });
@@ -30,18 +18,54 @@ export const signup = async (req, res) => {
       return res.status(403).json({ message: "User already exist." });
     }
 
+    var validatePassRegex = new RegExp(
+      "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"
+    );
+
+    if (!validatePassRegex.test(password)) {
+      return res.status(400).json({ message: "Invalid password" });
+    }
+
     if (password !== confirmPassword) {
       return res.status(400).json({ message: "Passwords don't match" });
     }
 
-    const user = await User.create({
+    const salt = await bcrypt.genSalt(10);
+    const hashedPass = await bcrypt.hash(password, salt);
+
+    const newUser = new User({
+      firstName,
+      lastName,
       email,
-      password,
-      name: `${firstName} ${lastName}`,
-      admin,
+      password: hashedPass,
+      registrationPlates,
     });
 
+    const user = await newUser.save();
+
     res.status(200).json({ user });
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const signIn = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User doesn't exist." });
+    }
+
+    const validatePassword = await bcrypt.compare(password, user.password);
+
+    if (!validatePassword || email != user.email) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    //const { password, ...rest } = user;
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
   }
