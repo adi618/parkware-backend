@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 
 import postRoutes from "./modules/posts/postRoutes.js";
 import userRoutes from "./modules/users/userRoutes.js";
+import parkingLocationRoutes from "./modules/parkingLocations/parkingLocationRoutes.js";
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(
 
 app.use("/posts", postRoutes);
 app.use("/users", userRoutes);
+app.use("/parkingLocations", parkingLocationRoutes);
 
 app.use((error, req, res, next) => {
   if (res.headerSent) {
