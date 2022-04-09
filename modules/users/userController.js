@@ -34,9 +34,15 @@ export const signUp = async (req, res) => {
       registrationPlates,
     });
 
-    await newUser.save();
+    const addedUser = await newUser.save();
 
-    const user = { firstName, lastName, email, registrationPlates };
+    const user = {
+      id: addedUser.id,
+      firstName,
+      lastName,
+      email,
+      registrationPlates,
+    };
 
     const token = jwt.sign(user, process.env.TOKEN_SECRET);
 
@@ -66,8 +72,8 @@ export const signIn = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const { firstName, lastName, registrationPlates } = existingUser;
-    const user = { firstName, lastName, email, registrationPlates };
+    const { id, firstName, lastName, registrationPlates } = existingUser;
+    const user = { id, firstName, lastName, email, registrationPlates };
 
     const token = jwt.sign(user, process.env.TOKEN_SECRET);
 
