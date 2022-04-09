@@ -12,20 +12,11 @@ export const signUp = async (req, res) => {
     confirmPassword,
     registrationPlates,
   } = req.body;
-
   try {
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
       return res.status(403).json({ message: "User already exist." });
-    }
-
-    var validatePassRegex = new RegExp(
-      "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"
-    );
-
-    if (!validatePassRegex.test(password)) {
-      return res.status(400).json({ message: "Invalid password" });
     }
 
     if (password !== confirmPassword) {

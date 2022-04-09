@@ -33,7 +33,37 @@ export const postParkingLocation = async (req, res) => {
 
     res.status(201).json(newParkingLocation);
   } catch (error) {
-    res.status(409).json({ message: error.message });
+    res.status(409).json({ message: "Something went wrong" });
+  }
+};
+
+export const reserveParkingLocationSpot = async (req, res) => {
+  const { id } = req.body;
+
+  try {
+    const parkingLocation = await ParkingLocation.findById(id);
+
+    if (!parkingLocation)
+      return res.status(404).json({ message: "Parking location not found" });
+
+    if (parkingLocation.takenSpots >= parkingLocation.totalSpots)
+      return res.status(400).json({ message: "Parking location full" });
+
+    const newParkingLocation = await ParkingLocation.updateOne(
+      { id: id },
+      { takenSpots: parkingLocation.takenSpots + 1 }
+    );
+
+    res.status(201).json(newParkingLocation);
+
+    setTimeout(19000, async () => {
+      await ParkingLocation.updateOne(
+        { id: id },
+        { takenSpots: parkingLocation.takenSpots - 1 }
+      );
+    });
+  } catch (error) {
+    res.status(409).json({ message: "Something went wrong" });
   }
 };
 
