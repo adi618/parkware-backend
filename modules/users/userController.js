@@ -1,3 +1,5 @@
+import jwt from "jsonwebtoken";
+
 import User from "./userModel.js";
 import bcrypt from "bcrypt";
 
@@ -41,10 +43,15 @@ export const signUp = async (req, res) => {
       registrationPlates,
     });
 
-    const user = await newUser.save();
+    await newUser.save();
 
-    res.status(200).json({ user });
+    const user = { firstName, lastName, email, registrationPlates };
+
+    const token = jwt.sign(user, process.env.TOKEN_SECRET);
+
+    res.status(200).json({ user, token });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Something went wrong" });
   }
 };
@@ -53,20 +60,29 @@ export const signIn = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email });
-    if (!user) {
+    const existingUser = await User.findOne({ email });
+
+    if (!existingUser) {
       return res.status(404).json({ message: "User doesn't exist." });
     }
 
-    const validatePassword = await bcrypt.compare(password, user.password);
+    const isPasswordCorrect = await bcrypt.compare(
+      password,
+      existingUser.password
+    );
 
-    if (!validatePassword || email != user.email) {
+    if (!isPasswordCorrect) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    //const { password, ...rest } = user;
-    res.status(200).json(user);
+    const { firstName, lastName, registrationPlates } = existingUser;
+    const user = { firstName, lastName, email, registrationPlates };
+
+    const token = jwt.sign(user, process.env.TOKEN_SECRET);
+
+    res.status(200).json({ user, token });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Something went wrong" });
   }
 };

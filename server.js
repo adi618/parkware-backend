@@ -3,8 +3,8 @@ import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
-import postRoutes from "./modules/posts/postRoutes.js";
 import userRoutes from "./modules/users/userRoutes.js";
+import parkingLocationRoutes from "./modules/parkingLocations/parkingLocationRoutes.js";
 
 const app = express();
 
@@ -14,8 +14,8 @@ app.use(
   express.json({ extended: true })
 );
 
-app.use("/posts", postRoutes);
 app.use("/users", userRoutes);
+app.use("/parkingLocations", parkingLocationRoutes);
 
 dotenv.config();
 app.use((error, req, res, next) => {
@@ -28,12 +28,9 @@ app.use((error, req, res, next) => {
 
 const URI = process.env.MONGO_URL;
 mongoose
-  .connect(URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(URI)
   .then(console.log("Connected to MongoDB"))
-  .catch((err) => console.log(err));
+  .catch(err => console.log(err));
 
 app.get("/", (req, res) => {
   res.send("Test");
