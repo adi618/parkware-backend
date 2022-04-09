@@ -55,13 +55,6 @@ export const reserveParkingLocationSpot = async (req, res) => {
     );
 
     res.status(201).json(newParkingLocation);
-
-    setTimeout(19000, async () => {
-      await ParkingLocation.updateOne(
-        { id: id },
-        { takenSpots: parkingLocation.takenSpots - 1 }
-      );
-    });
   } catch (error) {
     res.status(409).json({ message: "Something went wrong" });
   }
